@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+
+# Data (too large for GitHub)
+data/raw/
+data/processed/
+*.fits
+*.npy
+
+# Models (too large)
+models/backbone/*.pth
+models/agents/*.pth
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Experiments
+experiments/*.csv
+
+# IDE
+.vscode/
+.idea/

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LightSeek — Exoplanet Detection</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#0B0F2D;color:#E0E8FF;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+  .logo{font-size:2.2rem;font-weight:700;letter-spacing:2px;margin-bottom:.4rem}
+  .logo span{color:#4FC3F7}
+  .sub{color:#90A4AE;font-size:.95rem;margin-bottom:2.5rem;text-align:center}
+  .card{background:#111D4A;border:1px solid #1E2D6B;border-radius:16px;padding:2rem;width:100%;max-width:480px}
+  .label{font-size:.8rem;color:#90A4AE;letter-spacing:.5px;margin-bottom:.5rem;text-transform:uppercase}
+  input[type=text]{width:100%;padding:.75rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.95rem;margin-bottom:1.2rem;outline:none}
+  input[type=text]:focus{border-color:#4FC3F7}
+  .divider{display:flex;align-items:center;gap:.75rem;color:#4A5568;font-size:.8rem;margin-bottom:1.2rem}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:#1E2D6B}
+  .upload{border:2px dashed #1E2D6B;border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:1.2rem}
+  .upload:hover{border-color:#4FC3F7}
+  .upload-icon{font-size:1.8rem;margin-bottom:.4rem}
+  .upload-text{color:#90A4AE;font-size:.85rem}
+  button{width:100%;padding:.85rem;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:background .2s}
+  button:hover{background:#1A75C9}
+  .badge{display:inline-block;background:#0C447C;color:#4FC3F7;font-size:.7rem;padding:2px 8px;border-radius:20px;margin-bottom:2rem}
+  .team{color:#4A5568;font-size:.75rem;margin-top:1.5rem;text-align:center}
+</style>
+</head>
+<body>
+  <div class="logo">🌟 Light<span>Seek</span></div>
+  <div class="sub">Multi-Agent AI Exoplanet Vetting System</div>
+  <span class="badge">ISRO BAH 2026 · Challenge 7 · Team Integral X</span>
+
+  <div class="card">
+    <div class="label">Enter Star ID</div>
+    <input type="text" id="starId" placeholder="e.g. Kepler-17 or TIC 260647166">
+
+    <div class="divider">or</div>
+
+    <div class="upload" onclick="document.getElementById('fitsFile').click()">
+      <div class="upload-icon">📡</div>
+      <div class="upload-text">Upload FITS light curve file</div>
+      <input type="file" id="fitsFile" accept=".fits,.fit" style="display:none">
+    </div>
+
+    <button onclick="analyze()">🔭 Analyze Star</button>
+  </div>
+
+  <div class="team">Team Integral X · Jnanavikas Institute of Technology · Bengaluru</div>
+
+<script>
+function analyze(){
+  const id = document.getElementById('starId').value.trim();
+  const file = document.getElementById('fitsFile').files[0];
+  if(!id && !file){ alert('Enter a star ID or upload a FITS file'); return; }
+  // TODO Week 6: POST to /predict/id or /predict/file
+  alert('Pipeline coming in Week 6! 🚀');
+}
+</script>
+</body>
+</html>

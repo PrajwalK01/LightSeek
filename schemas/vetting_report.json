@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LightSeek Vetting Report",
+  "type": "object",
+  "properties": {
+    "target": { "type": "string" },
+    "mission": { "type": "string", "enum": ["kepler", "tess"] },
+    "agents": {
+      "type": "object",
+      "properties": {
+        "detect": {
+          "type": "object",
+          "properties": {
+            "verdict":       { "type": "string", "enum": ["PASS","FAIL","PENDING"] },
+            "period_days":   { "type": ["number","null"] },
+            "depth":         { "type": ["number","null"] },
+            "duration_hours":{ "type": ["number","null"] },
+            "snr":           { "type": ["number","null"] },
+            "n_transits":    { "type": ["integer","null"] },
+            "key_concern":   { "type": ["string","null"] }
+          }
+        },
+        "challenge": {
+          "type": "object",
+          "properties": {
+            "verdict":                  { "type": "string" },
+            "secondary_eclipse_detected":{ "type": ["boolean","null"] },
+            "even_odd_depth_diff_pct":  { "type": ["number","null"] },
+            "centroid_shift_px":        { "type": ["number","null"] },
+            "transit_shape":            { "type": "string" },
+            "key_concern":              { "type": ["string","null"] }
+          }
+        },
+        "analyze": {
+          "type": "object",
+          "properties": {
+            "verdict":               { "type": "string" },
+            "flares_detected":       { "type": ["integer","null"] },
+            "rotation_period_days":  { "type": ["number","null"] },
+            "oot_scatter_ppm":       { "type": ["number","null"] },
+            "stellar_quiet":         { "type": ["boolean","null"] },
+            "key_concern":           { "type": ["string","null"] }
+          }
+        }
+      }
+    },
+    "verdict": {
+      "type": "object",
+      "properties": {
+        "verdict":            { "type": "string", "enum": ["PLANET CANDIDATE","FALSE POSITIVE","UNCERTAIN"] },
+        "confidence":         { "type": "number", "minimum": 0, "maximum": 1 },
+        "reasoning":          { "type": "string" },
+        "dominant_evidence":  { "type": "string" },
+        "recommended_followup":{ "type": "string" }
+      }
+    }
+  }
+}
