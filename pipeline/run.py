@@ -1,70 +1,93 @@
 """
-LightSeek — Main Pipeline
-Runs full detection + vetting for a given star.
-Usage: python pipeline/run.py --target "Kepler-17" --mission kepler
+LightSeek — Full Pipeline Runner (W4)
+DETECT → CHALLENGE → ANALYZE → JUDGE
 Author: Team Integral X
 """
 
+import sys
+import os
 import json
-import argparse
-from pipeline import preprocess, detect, challenge, analyze, judge
+import numpy as np
+import lightkurve as lk
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))))
+
+from pipeline import detect, challenge, analyze, judge
 
 
-def run_pipeline(target: str, mission: str = "kepler") -> dict:
-    print(f"\n🔭 LightSeek — Analyzing {target}\n{'─'*40}")
+def run_pipeline(target: str,
+                  mission: str = "kepler",
+                  quarter: int = 1) -> dict:
 
-    # Step 1: Preprocess
-    time, flux = preprocess.preprocess(target, mission)
+    print(f"\n{'='*50}")
+    print(f"LightSeek — Analyzing {target}")
+    print(f"{'='*50}")
 
-    # Step 2: DETECT
-    print("🔍 DETECT agent running...")
+    # Download + preprocess
+    print(f"Downloading light curve...")
+    result = lk.search_lightcurve(
+        target, mission=mission, quarter=quarter
+    )
+    if len(result) == 0:
+        return {"error": f"No light curve found for {target}"}
+
+    lc   = result[0].download()
+    lc   = lc.remove_nans().remove_outliers().normalize()
+    time = lc.time.value
+    flux = lc.flux.value
+    flux = np.nan_to_num(flux, nan=1.0)
+
+    # DETECT
+    print(f"DETECT agent running...")
     detect_report = detect.run(time, flux)
-    print(f"   → {detect_report['verdict']}")
+    print(f"  → {detect_report['verdict']} "
+          f"(P={detect_report.get('period_days')}d, "
+          f"SNR={detect_report.get('snr')})")
 
-    # Step 3: CHALLENGE
-    print("⚔️  CHALLENGE agent running...")
+    # CHALLENGE
+    print(f"CHALLENGE agent running...")
     challenge_report = challenge.run(time, flux, detect_report)
-    print(f"   → {challenge_report['verdict']}")
+    print(f"  → {challenge_report['verdict']}")
 
-    # Step 4: ANALYZE
-    print("🔬 ANALYZE agent running...")
+    # ANALYZE
+    print(f"ANALYZE agent running...")
     analyze_report = analyze.run(time, flux)
-    print(f"   → {analyze_report['verdict']}")
+    print(f"  → {analyze_report['verdict']} "
+          f"(flares={analyze_report.get('flares_detected')})")
 
-    # Step 5: JUDGE
-    print("⚖️  JUDGE deliberating...")
+    # JUDGE
+    print(f"JUDGE deliberating...")
     verdict = judge.run(detect_report, challenge_report, analyze_report)
 
-    result = {
-        "target": target,
+    result_data = {
+        "target":  target,
         "mission": mission,
         "agents": {
-            "detect": detect_report,
+            "detect":    detect_report,
             "challenge": challenge_report,
-            "analyze": analyze_report
+            "analyze":   analyze_report
         },
         "verdict": verdict
     }
 
-    print(f"\n{'═'*40}")
-    print(f"🌟 FINAL VERDICT: {verdict.get('verdict', 'PENDING')}")
-    print(f"   Confidence: {verdict.get('confidence', 0)*100:.1f}%")
-    print(f"   Reasoning: {verdict.get('reasoning', 'N/A')}")
-    print(f"{'═'*40}\n")
+    print(f"\n{'='*50}")
+    print(f"VERDICT:    {verdict.get('verdict')}")
+    print(f"CONFIDENCE: {verdict.get('confidence', 0)*100:.0f}%")
+    print(f"REASONING:  {verdict.get('reasoning')}")
+    print(f"FOLLOWUP:   {verdict.get('recommended_followup')}")
+    print(f"{'='*50}\n")
 
-    return result
+    return result_data
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--target", default="Kepler-17")
-    parser.add_argument("--mission", default="kepler")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
+    # Test on confirmed planet
+    print("TEST 1 — Confirmed planet (Kepler-17b)")
+    r1 = run_pipeline("Kepler-17", "kepler", 1)
 
-    result = run_pipeline(args.target, args.mission)
-
-    if args.output:
-        with open(args.output, "w") as f:
-            json.dump(result, f, indent=2)
-        print(f"✓ Report saved to {args.output}")
+    # Save report
+    os.makedirs("results/sample_verdicts", exist_ok=True)
+    with open("results/sample_verdicts/kepler17_report.json", "w") as f:
+        json.dump(r1, f, indent=2)
+    print("Report saved to results/sample_verdicts/kepler17_report.json")

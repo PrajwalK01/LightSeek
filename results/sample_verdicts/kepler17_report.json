@@ -1,0 +1,42 @@
+{
+  "target": "Kepler-17",
+  "mission": "kepler",
+  "agents": {
+    "detect": {
+      "verdict": "PASS",
+      "period_days": 1.4852,
+      "depth": 0.015072,
+      "duration_hours": 2.4,
+      "snr": 1.85,
+      "bls_power": 0.0122,
+      "n_transits": 22,
+      "transit_shape": "uncertain",
+      "key_concern": null
+    },
+    "challenge": {
+      "verdict": "PASS",
+      "secondary_eclipse_detected": false,
+      "secondary_depth": -0.001177,
+      "even_odd_depth_diff_pct": 0.0,
+      "centroid_shift_px": 0.0,
+      "transit_shape": "flat-bottomed",
+      "key_concern": null
+    },
+    "analyze": {
+      "verdict": "PASS",
+      "flares_detected": 0,
+      "rotation_period_days": 12.33,
+      "ls_power": 0.4751,
+      "oot_scatter_ppm": 9094.2,
+      "stellar_quiet": true,
+      "key_concern": null
+    }
+  },
+  "verdict": {
+    "verdict": "PLANET CANDIDATE",
+    "confidence": 0.82,
+    "reasoning": "All three agents passed. Periodic signal confirmed, no false positive signatures, stellar activity within normal range.",
+    "dominant_evidence": "All agents agree",
+    "recommended_followup": "Radial velocity follow-up recommended"
+  }
+}
