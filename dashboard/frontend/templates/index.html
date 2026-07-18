@@ -4,57 +4,334 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LightSeek — Exoplanet Detection</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{background:#0B0F2D;color:#E0E8FF;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
-  .logo{font-size:2.2rem;font-weight:700;letter-spacing:2px;margin-bottom:.4rem}
-  .logo span{color:#4FC3F7}
-  .sub{color:#90A4AE;font-size:.95rem;margin-bottom:2.5rem;text-align:center}
-  .card{background:#111D4A;border:1px solid #1E2D6B;border-radius:16px;padding:2rem;width:100%;max-width:480px}
-  .label{font-size:.8rem;color:#90A4AE;letter-spacing:.5px;margin-bottom:.5rem;text-transform:uppercase}
-  input[type=text]{width:100%;padding:.75rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.95rem;margin-bottom:1.2rem;outline:none}
-  input[type=text]:focus{border-color:#4FC3F7}
-  .divider{display:flex;align-items:center;gap:.75rem;color:#4A5568;font-size:.8rem;margin-bottom:1.2rem}
-  .divider::before,.divider::after{content:'';flex:1;height:1px;background:#1E2D6B}
-  .upload{border:2px dashed #1E2D6B;border-radius:8px;padding:1.5rem;text-align:center;cursor:pointer;transition:border-color .2s;margin-bottom:1.2rem}
-  .upload:hover{border-color:#4FC3F7}
-  .upload-icon{font-size:1.8rem;margin-bottom:.4rem}
-  .upload-text{color:#90A4AE;font-size:.85rem}
-  button{width:100%;padding:.85rem;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;letter-spacing:.5px;transition:background .2s}
-  button:hover{background:#1A75C9}
-  .badge{display:inline-block;background:#0C447C;color:#4FC3F7;font-size:.7rem;padding:2px 8px;border-radius:20px;margin-bottom:2rem}
-  .team{color:#4A5568;font-size:.75rem;margin-top:1.5rem;text-align:center}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0B0F2D;color:#E0E8FF;font-family:'Segoe UI',sans-serif;min-height:100vh}
+.header{padding:1.5rem 2rem;border-bottom:1px solid #1E2D6B;display:flex;align-items:center;gap:12px}
+.logo{font-size:1.6rem;font-weight:700;letter-spacing:2px}
+.logo span{color:#4FC3F7}
+.badge{font-size:10px;padding:2px 10px;border-radius:20px;background:#0C447C;color:#4FC3F7;margin-left:8px}
+.main{max-width:900px;margin:0 auto;padding:2rem 1rem}
+.hero{text-align:center;margin-bottom:2.5rem}
+.hero h1{font-size:1.8rem;font-weight:600;margin-bottom:.5rem}
+.hero p{color:#90A4AE;font-size:.95rem}
+.card{background:#111D4A;border:1px solid #1E2D6B;border-radius:16px;padding:1.5rem;margin-bottom:1.2rem}
+.card-title{font-size:.75rem;color:#4FC3F7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1rem;font-weight:500}
+.input-row{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:200px;padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.95rem;outline:none}
+input[type=text]:focus{border-color:#4FC3F7}
+.btn{padding:.7rem 1.4rem;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
+.btn:hover{background:#1A75C9}
+.btn-outline{background:transparent;border:1px solid #185FA5;color:#4FC3F7}
+.btn-outline:hover{background:#0C447C}
+.divider{display:flex;align-items:center;gap:.75rem;color:#4A5568;font-size:.8rem;margin:.8rem 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1E2D6B}
+.upload-zone{border:2px dashed #1E2D6B;border-radius:8px;padding:1.2rem;text-align:center;cursor:pointer;transition:border-color .2s}
+.upload-zone:hover{border-color:#4FC3F7}
+.upload-zone p{color:#90A4AE;font-size:.85rem;margin-top:.4rem}
+#results{display:none}
+.verdict-card{border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border:1px solid}
+.verdict-PLANET{background:#0A1F0A;border-color:#2E7D32}
+.verdict-FALSE{background:#1F0A0A;border-color:#C62828}
+.verdict-UNCERTAIN{background:#1A1505;border-color:#F57F17}
+.verdict-title{font-size:1.3rem;font-weight:700;margin-bottom:.3rem}
+.verdict-PLANET .verdict-title{color:#66BB6A}
+.verdict-FALSE .verdict-title{color:#EF5350}
+.verdict-UNCERTAIN .verdict-title{color:#FFB300}
+.confidence-bar{height:6px;border-radius:3px;background:#1E2D6B;margin:.8rem 0;overflow:hidden}
+.confidence-fill{height:6px;border-radius:3px;transition:width .8s}
+.reasoning{color:#B0BEC5;font-size:.9rem;line-height:1.6;margin-top:.5rem}
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1rem}
+.agent-card{background:#0B0F2D;border-radius:10px;padding:1rem;border:.5px solid #1E2D6B}
+.agent-name{font-size:.75rem;font-weight:600;letter-spacing:.5px;margin-bottom:.6rem;text-transform:uppercase}
+.agent-PASS{color:#66BB6A}
+.agent-FAIL{color:#EF5350}
+.agent-SKIP,.agent-UNCERTAIN{color:#FFB300}
+.agent-row{display:flex;justify-content:space-between;font-size:.8rem;color:#90A4AE;margin:.2rem 0}
+.agent-row span:last-child{color:#E0E8FF;font-weight:500}
+.chart-wrap{background:#0B0F2D;border-radius:10px;padding:1rem;margin-bottom:1rem}
+.loading{text-align:center;padding:2rem;color:#90A4AE}
+.spinner{width:36px;height:36px;border:3px solid #1E2D6B;border-top-color:#4FC3F7;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{display:flex;flex-direction:column;gap:.4rem;margin-top:1rem}
+.step{font-size:.85rem;color:#90A4AE;display:flex;align-items:center;gap:.5rem}
+.step.done{color:#66BB6A}
+.step.active{color:#4FC3F7}
+.followup{font-size:.85rem;color:#90A4AE;padding:.6rem .8rem;background:#0B0F2D;border-radius:6px;border-left:3px solid #4FC3F7;margin-top:.8rem}
 </style>
 </head>
 <body>
+
+<div class="header">
   <div class="logo">🌟 Light<span>Seek</span></div>
-  <div class="sub">Multi-Agent AI Exoplanet Vetting System</div>
   <span class="badge">ISRO BAH 2026 · Challenge 7 · Team Integral X</span>
+</div>
 
-  <div class="card">
-    <div class="label">Enter Star ID</div>
-    <input type="text" id="starId" placeholder="e.g. Kepler-17 or TIC 260647166">
-
-    <div class="divider">or</div>
-
-    <div class="upload" onclick="document.getElementById('fitsFile').click()">
-      <div class="upload-icon">📡</div>
-      <div class="upload-text">Upload FITS light curve file</div>
-      <input type="file" id="fitsFile" accept=".fits,.fit" style="display:none">
-    </div>
-
-    <button onclick="analyze()">🔭 Analyze Star</button>
+<div class="main">
+  <div class="hero">
+    <h1>Multi-Agent Exoplanet Detection</h1>
+    <p>Four AI agents debate every transit candidate — producing explainable, trustworthy verdicts</p>
   </div>
 
-  <div class="team">Team Integral X · Jnanavikas Institute of Technology · Bengaluru</div>
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-title">Analyze a Star</div>
+    <div class="input-row">
+      <input type="text" id="starId" placeholder="Enter star ID — e.g. Kepler-17 or Kepler-22">
+      <select id="mission" style="padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.9rem">
+        <option value="kepler">Kepler</option>
+        <option value="tess">TESS</option>
+      </select>
+      <select id="quarter" style="padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.9rem">
+        <option value="1">Quarter 1</option>
+        <option value="2">Quarter 2</option>
+        <option value="3">Quarter 3</option>
+      </select>
+      <button class="btn" onclick="analyzeById()">🔭 Analyze</button>
+    </div>
+
+    <div class="divider">or try a sample</div>
+
+    <button class="btn btn-outline" onclick="loadSample()" style="width:100%">
+      ⭐ Load Kepler-17b Sample (instant demo)
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" style="display:none" class="card">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Running LightSeek pipeline...</p>
+      <div class="steps" id="steps">
+        <div class="step active" id="s1">🔍 DETECT — checking periodicity...</div>
+        <div class="step" id="s2">⚔️ CHALLENGE — hunting false positives...</div>
+        <div class="step" id="s3">🔬 ANALYZE — examining stellar activity...</div>
+        <div class="step" id="s4">⚖️ JUDGE — deliberating verdict...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div id="results">
+    <!-- Verdict -->
+    <div id="verdictCard" class="verdict-card">
+      <div id="verdictTitle" class="verdict-title"></div>
+      <div style="font-size:.85rem;color:#90A4AE" id="targetLabel"></div>
+      <div class="confidence-bar">
+        <div class="confidence-fill" id="confFill"></div>
+      </div>
+      <div style="font-size:.8rem;color:#90A4AE" id="confLabel"></div>
+      <div class="reasoning" id="reasoning"></div>
+      <div class="followup" id="followup"></div>
+    </div>
+
+    <!-- Light curve chart -->
+    <div class="card">
+      <div class="card-title">Light Curve</div>
+      <div class="chart-wrap">
+        <canvas id="lcChart" height="120"></canvas>
+      </div>
+    </div>
+
+    <!-- Agent cards -->
+    <div class="card">
+      <div class="card-title">Agent Reports</div>
+      <div class="agents-grid" id="agentsGrid"></div>
+    </div>
+  </div>
+</div>
 
 <script>
-function analyze(){
-  const id = document.getElementById('starId').value.trim();
-  const file = document.getElementById('fitsFile').files[0];
-  if(!id && !file){ alert('Enter a star ID or upload a FITS file'); return; }
-  // TODO Week 6: POST to /predict/id or /predict/file
-  alert('Pipeline coming in Week 6! 🚀');
+let lcChart = null;
+
+async function analyzeById() {
+  const id      = document.getElementById('starId').value.trim();
+  const mission = document.getElementById('mission').value;
+  const quarter = document.getElementById('quarter').value;
+  if (!id) { alert('Enter a star ID'); return; }
+  showLoading();
+  animateSteps();
+  try {
+    const res  = await fetch('/predict/id', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({target_id: id, mission, quarter: parseInt(quarter)})
+    });
+    const data = await res.json();
+    if (data.detail) throw new Error(data.detail);
+    showResults(data);
+  } catch(e) {
+    hideLoading();
+    alert('Error: ' + e.message);
+  }
+}
+
+async function loadSample() {
+  showLoading();
+  animateSteps();
+  try {
+    const res  = await fetch('/sample');
+    const data = await res.json();
+    showResults(data);
+  } catch(e) {
+    hideLoading();
+    alert('Error loading sample: ' + e.message);
+  }
+}
+
+function showLoading() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  ['s1','s2','s3','s4'].forEach((s,i) => {
+    document.getElementById(s).className = 'step' + (i===0?' active':'');
+  });
+}
+
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+}
+
+function animateSteps() {
+  const steps = ['s1','s2','s3','s4'];
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i > 0) {
+      document.getElementById(steps[i-1]).className = 'step done';
+      document.getElementById(steps[i-1]).innerHTML =
+        document.getElementById(steps[i-1]).innerHTML.replace('...','✓');
+    }
+    if (i < steps.length) {
+      document.getElementById(steps[i]).className = 'step active';
+    }
+    i++;
+    if (i > steps.length) clearInterval(iv);
+  }, 1200);
+}
+
+function showResults(data) {
+  hideLoading();
+  const v       = data.verdict || {};
+  const agents  = data.agents  || {};
+  const verdict = v.verdict    || 'UNCERTAIN';
+  const conf    = v.confidence || 0.5;
+
+  // Verdict card
+  const vKey = verdict.includes('PLANET') ? 'PLANET'
+             : verdict.includes('FALSE')  ? 'FALSE'
+             : 'UNCERTAIN';
+  const vc = document.getElementById('verdictCard');
+  vc.className = `verdict-card verdict-${vKey}`;
+
+  const emoji = vKey==='PLANET' ? '🪐' : vKey==='FALSE' ? '❌' : '❓';
+  document.getElementById('verdictTitle').textContent =
+    `${emoji} ${verdict}`;
+  document.getElementById('targetLabel').textContent =
+    `Star: ${data.target || 'Unknown'} · Mission: ${data.mission || '—'}`;
+  document.getElementById('confFill').style.width  = `${conf*100}%`;
+  document.getElementById('confFill').style.background =
+    vKey==='PLANET' ? '#66BB6A' : vKey==='FALSE' ? '#EF5350' : '#FFB300';
+  document.getElementById('confLabel').textContent =
+    `Confidence: ${(conf*100).toFixed(0)}%`;
+  document.getElementById('reasoning').textContent =
+    v.reasoning || '—';
+  document.getElementById('followup').textContent =
+    '📡 ' + (v.recommended_followup || '—');
+
+  // Light curve chart
+  const lcd = data.lc_data || {};
+  if (lcd.time && lcd.flux) {
+    if (lcChart) lcChart.destroy();
+    const ctx = document.getElementById('lcChart').getContext('2d');
+    lcChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: lcd.time.map(t => t.toFixed(1)),
+        datasets: [{
+          data: lcd.flux,
+          borderColor: '#4FC3F7',
+          borderWidth: 1,
+          pointRadius: 0,
+          tension: 0.1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            ticks: { color:'#90A4AE', maxTicksLimit: 8,
+                     font:{size:10} },
+            grid:  { color:'#1E2D6B' },
+            title: { display:true, text:'Time (days)',
+                     color:'#90A4AE', font:{size:11} }
+          },
+          y: {
+            ticks: { color:'#90A4AE', font:{size:10} },
+            grid:  { color:'#1E2D6B' },
+            title: { display:true, text:'Normalized Flux',
+                     color:'#90A4AE', font:{size:11} }
+          }
+        }
+      }
+    });
+  }
+
+  // Agent cards
+  const grid   = document.getElementById('agentsGrid');
+  grid.innerHTML = '';
+  const agentDefs = [
+    { key:'detect',    name:'DETECT',    icon:'🔍',
+      fields:[['Period','period_days','d'],['Depth','depth',''],
+              ['SNR','snr',''],['Transits','n_transits','']] },
+    { key:'challenge', name:'CHALLENGE', icon:'⚔️',
+      fields:[['2nd eclipse','secondary_eclipse_detected',''],
+              ['Shape','transit_shape',''],
+              ['Even/odd diff','even_odd_depth_diff_pct','%']] },
+    { key:'analyze',   name:'ANALYZE',   icon:'🔬',
+      fields:[['Flares','flares_detected',''],
+              ['Rotation','rotation_period_days','d'],
+              ['OOT scatter','oot_scatter_ppm','ppm'],
+              ['Quiet star','stellar_quiet','']] },
+    { key:'judge',     name:'JUDGE',     icon:'⚖️',
+      fields:[] }
+  ];
+
+  agentDefs.forEach(def => {
+    const a   = def.key === 'judge' ? v : (agents[def.key] || {});
+    const vrd = def.key === 'judge' ? verdict : (a.verdict || '—');
+    const cls = `agent-${vrd.split(' ')[0]}`;
+    let rows  = def.fields.map(([label, field, unit]) => {
+      let val = a[field];
+      if (val === null || val === undefined) val = '—';
+      else if (typeof val === 'boolean') val = val ? 'Yes' : 'No';
+      else if (typeof val === 'number')  val = val.toFixed(3);
+      return `<div class="agent-row">
+        <span>${label}</span>
+        <span>${val}${unit&&val!=='—'?unit:''}</span>
+      </div>`;
+    }).join('');
+    if (def.key === 'judge') {
+      rows = `<div class="agent-row">
+        <span>Confidence</span>
+        <span>${((v.confidence||0)*100).toFixed(0)}%</span>
+      </div>`;
+    }
+    const concern = a.key_concern || a.reasoning;
+    grid.innerHTML += `
+      <div class="agent-card">
+        <div class="agent-name ${cls}">${def.icon} ${def.name}</div>
+        <div class="agent-row">
+          <span>Verdict</span>
+          <span class="${cls}" style="font-weight:600">${vrd}</span>
+        </div>
+        ${rows}
+        ${concern?`<div style="font-size:.75rem;color:#78909C;margin-top:.5rem;font-style:italic">${concern}</div>`:''}
+      </div>`;
+  });
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
 }
 </script>
 </body>

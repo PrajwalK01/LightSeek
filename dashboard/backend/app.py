@@ -1,15 +1,24 @@
 """
-LightSeek — FastAPI Backend
+LightSeek — FastAPI Backend (W5)
 Author: Team Integral X
 """
 
-from fastapi import FastAPI, UploadFile, File, Form
+import sys
+import os
+import json
+import numpy as np
+import lightkurve as lk
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__)))))
+
+from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-import json, os, sys
 
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from pipeline import detect, challenge, analyze, judge
 
 app = FastAPI(title="LightSeek API", version="1.0.0")
 
@@ -20,10 +29,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Serve frontend
+FRONTEND = os.path.join(os.path.dirname(__file__),
+                         "..", "frontend", "templates")
 
-class PredictByID(BaseModel):
+
+class StarRequest(BaseModel):
     target_id: str
-    mission: str = "kepler"
+    mission:   str = "kepler"
+    quarter:   int = 1
+
+
+def run_full_pipeline(time, flux):
+    detect_report   = detect.run(time, flux)
+    challenge_report = challenge.run(time, flux, detect_report)
+    analyze_report  = analyze.run(time, flux)
+    verdict         = judge.run(detect_report, challenge_report,
+                                analyze_report)
+    return {
+        "agents": {
+            "detect":    detect_report,
+            "challenge": challenge_report,
+            "analyze":   analyze_report
+        },
+        "verdict": verdict
+    }
+
+
+@app.get("/")
+def index():
+    return FileResponse(
+        os.path.join(FRONTEND, "index.html")
+    )
 
 
 @app.get("/health")
@@ -32,63 +69,92 @@ def health():
 
 
 @app.post("/predict/id")
-async def predict_by_id(body: PredictByID):
-    """Analyze a star by its TIC/KIC ID."""
-    # TODO Week 6: Connect to pipeline
-    return {
-        "target": body.target_id,
-        "status": "processing",
-        "message": "Pipeline not yet connected"
-    }
+async def predict_by_id(body: StarRequest):
+    try:
+        print(f"Analyzing {body.target_id}...")
+        result = lk.search_lightcurve(
+            body.target_id,
+            mission=body.mission,
+            quarter=body.quarter
+        )
+        if len(result) == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No light curve found for {body.target_id}"
+            )
+
+        lc   = result[0].download()
+        lc   = lc.remove_nans().remove_outliers().normalize()
+        time = lc.time.value
+        flux = lc.flux.value
+        flux = np.nan_to_num(flux, nan=1.0)
+
+        # Light curve data for plotting
+        lc_data = {
+            "time": time.tolist()[:500],
+            "flux": flux.tolist()[:500]
+        }
+
+        pipeline_result = run_full_pipeline(time, flux)
+        pipeline_result["target"]  = body.target_id
+        pipeline_result["mission"] = body.mission
+        pipeline_result["lc_data"] = lc_data
+
+        return JSONResponse(content=pipeline_result)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/predict/file")
 async def predict_by_file(file: UploadFile = File(...)):
-    """Analyze a star by uploading a FITS file."""
-    # TODO Week 6: Save file + run pipeline
-    return {
-        "filename": file.filename,
-        "status": "processing",
-        "message": "Pipeline not yet connected"
-    }
+    try:
+        contents = await file.read()
+        tmp_path = f"tmp_{file.filename}"
+        with open(tmp_path, "wb") as f:
+            f.write(contents)
+
+        lc   = lk.read(tmp_path)
+        lc   = lc.remove_nans().remove_outliers().normalize()
+        time = lc.time.value
+        flux = lc.flux.value
+        flux = np.nan_to_num(flux, nan=1.0)
+        os.remove(tmp_path)
+
+        lc_data = {
+            "time": time.tolist()[:500],
+            "flux": flux.tolist()[:500]
+        }
+
+        pipeline_result = run_full_pipeline(time, flux)
+        pipeline_result["target"]  = file.filename
+        pipeline_result["mission"] = "uploaded"
+        pipeline_result["lc_data"] = lc_data
+
+        return JSONResponse(content=pipeline_result)
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/sample")
 def get_sample():
-    """Return a sample vetting report for demo."""
-    return {
-        "target": "Kepler-17b",
-        "mission": "kepler",
-        "agents": {
-            "detect": {
-                "verdict": "PASS",
-                "period_days": 1.486,
-                "depth": 0.014,
-                "snr": 28.4,
-                "n_transits": 12
-            },
-            "challenge": {
-                "verdict": "PASS",
-                "secondary_eclipse_detected": False,
-                "centroid_shift_px": 0.002,
-                "transit_shape": "flat-bottomed"
-            },
-            "analyze": {
-                "verdict": "PASS",
-                "flares_detected": 0,
-                "stellar_quiet": True,
-                "oot_scatter_ppm": 145
-            }
-        },
-        "verdict": {
-            "verdict": "PLANET CANDIDATE",
-            "confidence": 0.94,
-            "reasoning": "All three agents agree. Strong periodic signal with flat-bottomed transit shape, no secondary eclipse, quiet host star. Consistent with a hot Jupiter in close orbit.",
-            "recommended_followup": "Radial velocity confirmation to measure planetary mass."
-        }
-    }
+    """Return pre-computed Kepler-17b sample for demo."""
+    sample_path = "results/sample_verdicts/kepler17_report.json"
+    if os.path.exists(sample_path):
+        with open(sample_path) as f:
+            data = json.load(f)
+        time = np.linspace(131, 165, 500).tolist()
+        flux = (1.0 + 0.002 * np.sin(
+            2 * np.pi * np.array(time) / 11.4
+        )).tolist()
+        data["lc_data"] = {"time": time, "flux": flux}
+        return JSONResponse(content=data)
+    return {"error": "Sample not found — run pipeline/run.py first"}
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
