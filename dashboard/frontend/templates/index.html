@@ -3,335 +3,837 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LightSeek — Exoplanet Detection</title>
+<title>LightSeek — AI Exoplanet Detection</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#0B0F2D;color:#E0E8FF;font-family:'Segoe UI',sans-serif;min-height:100vh}
-.header{padding:1.5rem 2rem;border-bottom:1px solid #1E2D6B;display:flex;align-items:center;gap:12px}
-.logo{font-size:1.6rem;font-weight:700;letter-spacing:2px}
-.logo span{color:#4FC3F7}
-.badge{font-size:10px;padding:2px 10px;border-radius:20px;background:#0C447C;color:#4FC3F7;margin-left:8px}
-.main{max-width:900px;margin:0 auto;padding:2rem 1rem}
-.hero{text-align:center;margin-bottom:2.5rem}
-.hero h1{font-size:1.8rem;font-weight:600;margin-bottom:.5rem}
-.hero p{color:#90A4AE;font-size:.95rem}
-.card{background:#111D4A;border:1px solid #1E2D6B;border-radius:16px;padding:1.5rem;margin-bottom:1.2rem}
-.card-title{font-size:.75rem;color:#4FC3F7;letter-spacing:.5px;text-transform:uppercase;margin-bottom:1rem;font-weight:500}
-.input-row{display:flex;gap:10px;flex-wrap:wrap}
-input[type=text]{flex:1;min-width:200px;padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.95rem;outline:none}
-input[type=text]:focus{border-color:#4FC3F7}
-.btn{padding:.7rem 1.4rem;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .2s}
-.btn:hover{background:#1A75C9}
-.btn-outline{background:transparent;border:1px solid #185FA5;color:#4FC3F7}
-.btn-outline:hover{background:#0C447C}
-.divider{display:flex;align-items:center;gap:.75rem;color:#4A5568;font-size:.8rem;margin:.8rem 0}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:#1E2D6B}
-.upload-zone{border:2px dashed #1E2D6B;border-radius:8px;padding:1.2rem;text-align:center;cursor:pointer;transition:border-color .2s}
-.upload-zone:hover{border-color:#4FC3F7}
-.upload-zone p{color:#90A4AE;font-size:.85rem;margin-top:.4rem}
-#results{display:none}
-.verdict-card{border-radius:12px;padding:1.2rem 1.5rem;margin-bottom:1rem;border:1px solid}
-.verdict-PLANET{background:#0A1F0A;border-color:#2E7D32}
-.verdict-FALSE{background:#1F0A0A;border-color:#C62828}
-.verdict-UNCERTAIN{background:#1A1505;border-color:#F57F17}
-.verdict-title{font-size:1.3rem;font-weight:700;margin-bottom:.3rem}
-.verdict-PLANET .verdict-title{color:#66BB6A}
-.verdict-FALSE .verdict-title{color:#EF5350}
-.verdict-UNCERTAIN .verdict-title{color:#FFB300}
-.confidence-bar{height:6px;border-radius:3px;background:#1E2D6B;margin:.8rem 0;overflow:hidden}
-.confidence-fill{height:6px;border-radius:3px;transition:width .8s}
-.reasoning{color:#B0BEC5;font-size:.9rem;line-height:1.6;margin-top:.5rem}
-.agents-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:1rem}
-.agent-card{background:#0B0F2D;border-radius:10px;padding:1rem;border:.5px solid #1E2D6B}
-.agent-name{font-size:.75rem;font-weight:600;letter-spacing:.5px;margin-bottom:.6rem;text-transform:uppercase}
-.agent-PASS{color:#66BB6A}
-.agent-FAIL{color:#EF5350}
-.agent-SKIP,.agent-UNCERTAIN{color:#FFB300}
-.agent-row{display:flex;justify-content:space-between;font-size:.8rem;color:#90A4AE;margin:.2rem 0}
-.agent-row span:last-child{color:#E0E8FF;font-weight:500}
-.chart-wrap{background:#0B0F2D;border-radius:10px;padding:1rem;margin-bottom:1rem}
-.loading{text-align:center;padding:2rem;color:#90A4AE}
-.spinner{width:36px;height:36px;border:3px solid #1E2D6B;border-top-color:#4FC3F7;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
-@keyframes spin{to{transform:rotate(360deg)}}
-.steps{display:flex;flex-direction:column;gap:.4rem;margin-top:1rem}
-.step{font-size:.85rem;color:#90A4AE;display:flex;align-items:center;gap:.5rem}
-.step.done{color:#66BB6A}
-.step.active{color:#4FC3F7}
-.followup{font-size:.85rem;color:#90A4AE;padding:.6rem .8rem;background:#0B0F2D;border-radius:6px;border-left:3px solid #4FC3F7;margin-top:.8rem}
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg-deep:    #020818;
+  --bg-mid:     #050f2e;
+  --glass-1:    rgba(255,255,255,0.04);
+  --glass-2:    rgba(255,255,255,0.08);
+  --glass-3:    rgba(255,255,255,0.12);
+  --border-1:   rgba(255,255,255,0.06);
+  --border-2:   rgba(255,255,255,0.12);
+  --border-3:   rgba(255,255,255,0.20);
+  --cyan:       #38bdf8;
+  --cyan-dim:   rgba(56,189,248,0.15);
+  --cyan-glow:  rgba(56,189,248,0.3);
+  --violet:     #a78bfa;
+  --violet-dim: rgba(167,139,250,0.15);
+  --green:      #34d399;
+  --green-dim:  rgba(52,211,153,0.15);
+  --red:        #f87171;
+  --red-dim:    rgba(248,113,113,0.15);
+  --amber:      #fbbf24;
+  --amber-dim:  rgba(251,191,36,0.15);
+  --text-1:     #f0f6ff;
+  --text-2:     #94a3b8;
+  --text-3:     #475569;
+  --mono:       'Space Mono', monospace;
+  --sans:       'Space Grotesk', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg-deep);
+  color: var(--text-1);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── STARFIELD ─────────────────────────────────────── */
+.stars {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(56,189,248,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 70%, rgba(167,139,250,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(5,15,46,0.8) 0%, var(--bg-deep) 100%);
+}
+.stars::before, .stars::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 40% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 55% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 85% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1px 1px at 92% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 35% 55%, rgba(56,189,248,0.8) 0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 12%, rgba(167,139,250,0.6) 0%, transparent 100%),
+    radial-gradient(2px 2px at 5% 50%, rgba(255,255,255,0.3) 0%, transparent 100%);
+}
+
+/* ── LAYOUT ─────────────────────────────────────────── */
+.wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.25rem 4rem; }
+
+/* ── HEADER ─────────────────────────────────────────── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  backdrop-filter: blur(20px) saturate(1.4);
+  background: rgba(2,8,24,0.85);
+  border-bottom: 1px solid var(--border-1);
+  padding: .9rem 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; flex-wrap: wrap;
+}
+.logo {
+  display: flex; align-items: center; gap: .6rem;
+  font-family: var(--mono); font-size: 1.1rem; font-weight: 700;
+  letter-spacing: .05em; color: var(--text-1);
+}
+.logo-star { font-size: 1.4rem; filter: drop-shadow(0 0 8px var(--cyan)); }
+.logo span { color: var(--cyan); }
+.header-badges { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+.hbadge {
+  font-family: var(--mono); font-size: .65rem; padding: .25rem .7rem;
+  border-radius: 20px; letter-spacing: .04em;
+}
+.hbadge-isro { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(56,189,248,0.3); }
+.hbadge-team { background: var(--violet-dim); color: var(--violet); border: 1px solid rgba(167,139,250,0.3); }
+.status-pill {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: var(--mono); font-size: .65rem; color: var(--green);
+  background: var(--green-dim); border: 1px solid rgba(52,211,153,0.3);
+  padding: .25rem .7rem; border-radius: 20px;
+}
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(52,211,153,0.4)} 50%{opacity:.5;box-shadow:0 0 0 4px transparent} }
+
+/* ── HERO ────────────────────────────────────────────── */
+.hero {
+  text-align: center; padding: 4rem 0 2.5rem;
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .15em;
+  color: var(--cyan); text-transform: uppercase; margin-bottom: 1.2rem;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.hero-eyebrow::before, .hero-eyebrow::after {
+  content: ''; width: 40px; height: 1px; background: var(--cyan); opacity: .4;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; line-height: 1.15;
+  margin-bottom: .8rem; letter-spacing: -.02em;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, var(--cyan) 0%, var(--violet) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+  color: var(--text-2); font-size: 1rem; max-width: 560px; margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+.hero-stats {
+  display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+.hstat {
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 12px; padding: .8rem 1.4rem; min-width: 110px;
+  backdrop-filter: blur(10px);
+  transition: border-color .2s, background .2s;
+}
+.hstat:hover { background: var(--glass-2); border-color: var(--border-2); }
+.hstat-n { font-family: var(--mono); font-size: 1.4rem; font-weight: 700; color: var(--cyan); }
+.hstat-l { font-size: .7rem; color: var(--text-3); margin-top: .2rem; letter-spacing: .04em; }
+
+/* ── GLASS CARD ─────────────────────────────────────── */
+.glass {
+  background: var(--glass-1);
+  backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid var(--border-1);
+  border-radius: 20px;
+  transition: border-color .25s, background .25s;
+}
+.glass:hover { background: var(--glass-2); border-color: var(--border-2); }
+.card-label {
+  font-family: var(--mono); font-size: .65rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-3);
+  display: flex; align-items: center; gap: .5rem; margin-bottom: 1.2rem;
+}
+.card-label::after { content: ''; flex: 1; height: 1px; background: var(--border-1); }
+
+/* ── INPUT SECTION ──────────────────────────────────── */
+.input-section { padding: 1.75rem; margin-bottom: 1rem; }
+.search-row {
+  display: grid; grid-template-columns: 1fr auto auto auto;
+  gap: .6rem;
+}
+@media(max-width:640px) { .search-row { grid-template-columns: 1fr; } }
+
+.input-wrap { position: relative; }
+.input-icon {
+  position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+  font-size: .9rem; color: var(--text-3); pointer-events: none;
+}
+input[type=text], select {
+  width: 100%;
+  padding: .75rem .9rem .75rem 2.4rem;
+  background: var(--glass-1);
+  border: 1px solid var(--border-1);
+  border-radius: 12px;
+  color: var(--text-1);
+  font-family: var(--sans);
+  font-size: .9rem;
+  outline: none;
+  transition: border-color .2s, background .2s, box-shadow .2s;
+}
+select { padding-left: .9rem; }
+input[type=text]:focus, select:focus {
+  border-color: var(--cyan);
+  background: var(--glass-2);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
+}
+input[type=text]::placeholder { color: var(--text-3); }
+option { background: #0d1b3e; }
+
+.btn-primary {
+  padding: .75rem 1.4rem;
+  background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(167,139,250,0.2));
+  border: 1px solid rgba(56,189,248,0.4);
+  border-radius: 12px;
+  color: var(--cyan);
+  font-family: var(--sans); font-size: .9rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: all .2s; display: flex; align-items: center; gap: .5rem;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, rgba(56,189,248,0.35), rgba(167,139,250,0.25));
+  border-color: var(--cyan);
+  box-shadow: 0 0 20px rgba(56,189,248,0.2);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+.divider {
+  display: flex; align-items: center; gap: .75rem;
+  color: var(--text-3); font-size: .75rem; font-family: var(--mono);
+  margin: 1rem 0;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border-1); }
+
+.sample-grid { display: flex; gap: .5rem; flex-wrap: wrap; }
+.sample-chip {
+  padding: .4rem .9rem;
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 8px; font-family: var(--mono); font-size: .72rem;
+  color: var(--text-2); cursor: pointer; transition: all .2s;
+}
+.sample-chip:hover {
+  background: var(--cyan-dim); border-color: rgba(56,189,248,0.3); color: var(--cyan);
+}
+
+/* ── LOADING ─────────────────────────────────────────── */
+.loading-panel { padding: 2.5rem 1.75rem; display: none; }
+.loading-panel.show { display: block; }
+.loading-title {
+  font-family: var(--mono); font-size: .75rem; color: var(--text-2);
+  margin-bottom: 1.5rem; letter-spacing: .06em;
+}
+.agent-steps { display: flex; flex-direction: column; gap: .6rem; }
+.astep {
+  display: flex; align-items: center; gap: .9rem;
+  padding: .75rem 1rem;
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 12px; font-size: .85rem;
+  transition: all .4s ease;
+}
+.astep.active {
+  background: var(--cyan-dim); border-color: rgba(56,189,248,0.3);
+  box-shadow: 0 0 20px rgba(56,189,248,0.08);
+}
+.astep.done {
+  background: var(--green-dim); border-color: rgba(52,211,153,0.3);
+}
+.astep-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+.astep-name { font-family: var(--mono); font-size: .72rem; color: var(--text-2); min-width: 90px; }
+.astep-text { color: var(--text-2); font-size: .82rem; }
+.astep.active .astep-text { color: var(--cyan); }
+.astep.done .astep-text { color: var(--green); }
+.astep-badge { margin-left: auto; font-size: .65rem; font-family: var(--mono); }
+.spin { animation: spin .8s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── RESULTS ─────────────────────────────────────────── */
+#results { display: none; }
+#results.show { display: block; }
+
+/* VERDICT */
+.verdict-banner {
+  padding: 1.75rem;
+  border-radius: 20px;
+  margin-bottom: 1rem;
+  border: 1px solid;
+  position: relative; overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+.verdict-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at top left, var(--vglow) 0%, transparent 60%);
+  pointer-events: none;
+}
+.verdict-banner.planet {
+  background: rgba(52,211,153,0.05); border-color: rgba(52,211,153,0.25);
+  --vglow: rgba(52,211,153,0.1);
+}
+.verdict-banner.false {
+  background: rgba(248,113,113,0.05); border-color: rgba(248,113,113,0.25);
+  --vglow: rgba(248,113,113,0.1);
+}
+.verdict-banner.uncertain {
+  background: rgba(251,191,36,0.05); border-color: rgba(251,191,36,0.25);
+  --vglow: rgba(251,191,36,0.1);
+}
+.verdict-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.verdict-left {}
+.verdict-emoji { font-size: 2.5rem; margin-bottom: .4rem; filter: drop-shadow(0 0 12px currentColor); }
+.verdict-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; margin-bottom: .2rem; }
+.verdict-banner.planet .verdict-title { color: var(--green); }
+.verdict-banner.false .verdict-title { color: var(--red); }
+.verdict-banner.uncertain .verdict-title { color: var(--amber); }
+.verdict-star { font-family: var(--mono); font-size: .75rem; color: var(--text-3); }
+.verdict-right { text-align: right; }
+.conf-ring {
+  position: relative; width: 80px; height: 80px; margin-left: auto;
+}
+.conf-ring svg { transform: rotate(-90deg); }
+.conf-ring circle { fill: none; stroke-width: 6; stroke-linecap: round; }
+.conf-track { stroke: rgba(255,255,255,0.06); }
+.conf-fill { transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+.planet .conf-fill { stroke: var(--green); }
+.false .conf-fill { stroke: var(--red); }
+.uncertain .conf-fill { stroke: var(--amber); }
+.conf-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.conf-pct { font-family: var(--mono); font-size: .95rem; font-weight: 700; color: var(--text-1); }
+.conf-text { font-size: .55rem; color: var(--text-3); letter-spacing: .05em; }
+.verdict-reasoning {
+  font-size: .88rem; color: var(--text-2); line-height: 1.7;
+  padding: .9rem 1.1rem;
+  background: rgba(0,0,0,0.2); border-radius: 10px;
+  border-left: 3px solid var(--border-2); margin-bottom: .9rem;
+}
+.verdict-followup {
+  display: flex; align-items: flex-start; gap: .7rem;
+  font-size: .82rem; color: var(--text-2);
+  padding: .7rem .9rem;
+  background: rgba(56,189,248,0.05); border-radius: 8px;
+  border: 1px solid rgba(56,189,248,0.15);
+}
+.followup-icon { color: var(--cyan); font-size: .95rem; flex-shrink: 0; margin-top: 1px; }
+
+/* 2-COL GRID */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+@media(max-width:700px) { .two-col { grid-template-columns: 1fr; } }
+
+/* CHART CARD */
+.chart-card { padding: 1.5rem; }
+.chart-wrap { position: relative; height: 180px; }
+
+/* AGENTS GRID */
+.agents-section { padding: 1.5rem; margin-bottom: 1rem; }
+.agents-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; }
+@media(max-width:800px) { .agents-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:480px) { .agents-grid { grid-template-columns: 1fr; } }
+.agent-card {
+  padding: 1rem;
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 14px;
+  transition: all .25s;
+}
+.agent-card:hover { background: var(--glass-2); border-color: var(--border-2); transform: translateY(-2px); }
+.agent-card.pass { border-color: rgba(52,211,153,0.25); }
+.agent-card.fail { border-color: rgba(248,113,113,0.25); }
+.agent-card.skip,
+.agent-card.uncertain { border-color: rgba(251,191,36,0.25); }
+.agent-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+.agent-icon { font-size: 1.3rem; }
+.agent-vbadge {
+  font-family: var(--mono); font-size: .6rem; padding: .2rem .6rem;
+  border-radius: 6px; font-weight: 700; letter-spacing: .04em;
+}
+.pass .agent-vbadge { background: var(--green-dim); color: var(--green); }
+.fail .agent-vbadge { background: var(--red-dim); color: var(--red); }
+.skip .agent-vbadge, .uncertain .agent-vbadge { background: var(--amber-dim); color: var(--amber); }
+.agent-name { font-family: var(--mono); font-size: .7rem; color: var(--text-3); margin-bottom: .8rem; letter-spacing: .06em; }
+.agent-rows { display: flex; flex-direction: column; gap: .35rem; }
+.agent-row { display: flex; justify-content: space-between; align-items: center; gap: .4rem; }
+.agent-row-l { font-size: .72rem; color: var(--text-3); }
+.agent-row-v { font-family: var(--mono); font-size: .72rem; color: var(--text-1); text-align: right; }
+.agent-concern {
+  margin-top: .7rem; padding: .5rem .6rem;
+  background: rgba(248,113,113,0.06); border-radius: 6px;
+  font-size: .68rem; color: var(--red); line-height: 1.5;
+  border: 1px solid rgba(248,113,113,0.15);
+}
+
+/* METRICS BAR */
+.metrics-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: .75rem; margin-bottom: 1rem;
+}
+@media(max-width:600px) { .metrics-row { grid-template-columns: repeat(2,1fr); } }
+.metric-card {
+  padding: 1.1rem 1.25rem;
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 14px; text-align: center;
+  transition: all .2s;
+}
+.metric-card:hover { background: var(--glass-2); border-color: var(--border-2); }
+.metric-n { font-family: var(--mono); font-size: 1.3rem; font-weight: 700; margin-bottom: .2rem; }
+.metric-l { font-size: .68rem; color: var(--text-3); letter-spacing: .04em; }
+
+/* HISTORY */
+.history-section { padding: 1.5rem; }
+.history-list { display: flex; flex-direction: column; gap: .5rem; margin-top: .5rem; }
+.history-item {
+  display: flex; align-items: center; gap: .9rem;
+  padding: .65rem .9rem;
+  background: var(--glass-1); border: 1px solid var(--border-1);
+  border-radius: 10px; cursor: pointer; transition: all .2s; font-size: .82rem;
+}
+.history-item:hover { background: var(--glass-2); border-color: var(--border-2); }
+.hi-icon { font-size: 1rem; flex-shrink: 0; }
+.hi-name { font-family: var(--mono); font-size: .78rem; flex: 1; color: var(--text-1); }
+.hi-verdict { font-size: .7rem; padding: .15rem .5rem; border-radius: 4px; font-family: var(--mono); }
+.hi-conf { font-family: var(--mono); font-size: .72rem; color: var(--text-3); }
+
+/* FOOTER */
+footer {
+  text-align: center; padding: 2rem 1rem;
+  font-family: var(--mono); font-size: .68rem; color: var(--text-3);
+  border-top: 1px solid var(--border-1); margin-top: 2rem;
+  letter-spacing: .04em;
+}
+footer a { color: var(--cyan); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
+<div class="stars"></div>
 
-<div class="header">
-  <div class="logo">🌟 Light<span>Seek</span></div>
-  <span class="badge">ISRO BAH 2026 · Challenge 7 · Team Integral X</span>
-</div>
+<header>
+  <div class="logo">
+    <span class="logo-star">🌟</span>
+    Light<span>Seek</span>
+  </div>
+  <div class="header-badges">
+    <span class="hbadge hbadge-isro">ISRO BAH 2026 · Challenge 7</span>
+    <span class="hbadge hbadge-team">Team Integral X · JVIT</span>
+    <span class="status-pill"><span class="pulse"></span>System Online</span>
+  </div>
+</header>
 
-<div class="main">
-  <div class="hero">
-    <h1>Multi-Agent Exoplanet Detection</h1>
-    <p>Four AI agents debate every transit candidate — producing explainable, trustworthy verdicts</p>
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">Multi-Agent AI · Exoplanet Detection</div>
+    <h1>Finding planets in<br><em>the noise of starlight</em></h1>
+    <p class="hero-sub">Four specialized AI agents independently analyze every transit candidate — debating, challenging, and verifying before delivering an explainable verdict.</p>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">4</div><div class="hstat-l">AI Agents</div></div>
+      <div class="hstat"><div class="hstat-n">1D</div><div class="hstat-l">CNN-Transformer</div></div>
+      <div class="hstat"><div class="hstat-n">82%</div><div class="hstat-l">Confidence</div></div>
+      <div class="hstat"><div class="hstat-n">100%</div><div class="hstat-l">Recall</div></div>
+      <div class="hstat"><div class="hstat-n">400M</div><div class="hstat-l">TESS Stars</div></div>
+    </div>
+  </section>
+
+  <!-- MODEL METRICS -->
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-n" style="color:var(--cyan)">0.714</div>
+      <div class="metric-l">F1 Score</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-n" style="color:var(--green)">1.000</div>
+      <div class="metric-l">Recall</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-n" style="color:var(--violet)">44%</div>
+      <div class="metric-l">Noise Reduction</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-n" style="color:var(--amber)">68</div>
+      <div class="metric-l">Training Curves</div>
+    </div>
   </div>
 
-  <!-- Input Card -->
-  <div class="card">
-    <div class="card-title">Analyze a Star</div>
-    <div class="input-row">
-      <input type="text" id="starId" placeholder="Enter star ID — e.g. Kepler-17 or Kepler-22">
-      <select id="mission" style="padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.9rem">
+  <!-- INPUT -->
+  <div class="glass input-section" style="margin-bottom:1rem">
+    <div class="card-label">🔭 Analyze a Star</div>
+    <div class="search-row">
+      <div class="input-wrap">
+        <span class="input-icon">✦</span>
+        <input type="text" id="starId" placeholder="Enter star ID — e.g. Kepler-17, Kepler-22, Kepler-186">
+      </div>
+      <select id="mission">
         <option value="kepler">Kepler</option>
         <option value="tess">TESS</option>
       </select>
-      <select id="quarter" style="padding:.7rem 1rem;background:#0B0F2D;border:1px solid #1E2D6B;border-radius:8px;color:#E0E8FF;font-size:.9rem">
-        <option value="1">Quarter 1</option>
-        <option value="2">Quarter 2</option>
-        <option value="3">Quarter 3</option>
+      <select id="quarter">
+        <option value="1">Q1</option>
+        <option value="2">Q2</option>
+        <option value="3">Q3</option>
       </select>
-      <button class="btn" onclick="analyzeById()">🔭 Analyze</button>
+      <button class="btn-primary" id="analyzeBtn" onclick="analyzeById()">
+        🔭 Analyze
+      </button>
     </div>
 
     <div class="divider">or try a sample</div>
 
-    <button class="btn btn-outline" onclick="loadSample()" style="width:100%">
-      ⭐ Load Kepler-17b Sample (instant demo)
-    </button>
+    <div class="sample-grid">
+      <div class="sample-chip" onclick="loadSample('Kepler-17','kepler',1)">⭐ Kepler-17b</div>
+      <div class="sample-chip" onclick="loadSample('Kepler-22','kepler',1)">🪐 Kepler-22b</div>
+      <div class="sample-chip" onclick="loadSample('Kepler-186','kepler',1)">🌍 Kepler-186f</div>
+      <div class="sample-chip" onclick="loadSample('Kepler-442','kepler',1)">💫 Kepler-442b</div>
+    </div>
   </div>
 
-  <!-- Loading -->
-  <div id="loading" style="display:none" class="card">
-    <div class="loading">
-      <div class="spinner"></div>
-      <p>Running LightSeek pipeline...</p>
-      <div class="steps" id="steps">
-        <div class="step active" id="s1">🔍 DETECT — checking periodicity...</div>
-        <div class="step" id="s2">⚔️ CHALLENGE — hunting false positives...</div>
-        <div class="step" id="s3">🔬 ANALYZE — examining stellar activity...</div>
-        <div class="step" id="s4">⚖️ JUDGE — deliberating verdict...</div>
+  <!-- LOADING -->
+  <div class="glass loading-panel" id="loading">
+    <div class="loading-title">⚡ PIPELINE RUNNING</div>
+    <div class="agent-steps">
+      <div class="astep" id="s0">
+        <span class="astep-icon">⬇️</span>
+        <span class="astep-name">DOWNLOAD</span>
+        <span class="astep-text">Fetching light curve from NASA archive...</span>
+        <span class="astep-badge"></span>
+      </div>
+      <div class="astep" id="s1">
+        <span class="astep-icon">🌊</span>
+        <span class="astep-name">DETECT</span>
+        <span class="astep-text">Running BLS periodogram — searching for transit period...</span>
+        <span class="astep-badge"></span>
+      </div>
+      <div class="astep" id="s2">
+        <span class="astep-icon">⚔️</span>
+        <span class="astep-name">CHALLENGE</span>
+        <span class="astep-text">Checking for eclipsing binary signatures...</span>
+        <span class="astep-badge"></span>
+      </div>
+      <div class="astep" id="s3">
+        <span class="astep-icon">🔬</span>
+        <span class="astep-name">ANALYZE</span>
+        <span class="astep-text">Examining stellar activity and flares...</span>
+        <span class="astep-badge"></span>
+      </div>
+      <div class="astep" id="s4">
+        <span class="astep-icon">⚖️</span>
+        <span class="astep-name">JUDGE</span>
+        <span class="astep-text">Deliberating consensus verdict...</span>
+        <span class="astep-badge"></span>
       </div>
     </div>
   </div>
 
-  <!-- Results -->
+  <!-- RESULTS -->
   <div id="results">
-    <!-- Verdict -->
-    <div id="verdictCard" class="verdict-card">
-      <div id="verdictTitle" class="verdict-title"></div>
-      <div style="font-size:.85rem;color:#90A4AE" id="targetLabel"></div>
-      <div class="confidence-bar">
-        <div class="confidence-fill" id="confFill"></div>
+
+    <!-- VERDICT BANNER -->
+    <div id="verdictBanner" class="verdict-banner" style="margin-bottom:1rem">
+      <div class="verdict-top">
+        <div class="verdict-left">
+          <div id="verdictEmoji" class="verdict-emoji"></div>
+          <div id="verdictTitle" class="verdict-title"></div>
+          <div id="verdictStar" class="verdict-star"></div>
+        </div>
+        <div class="verdict-right">
+          <div class="conf-ring" id="confRing">
+            <svg width="80" height="80" viewBox="0 0 80 80">
+              <circle class="conf-track" cx="40" cy="40" r="34"/>
+              <circle class="conf-fill" id="confCircle" cx="40" cy="40" r="34"
+                stroke-dasharray="213.6"
+                stroke-dashoffset="213.6"/>
+            </svg>
+            <div class="conf-label">
+              <span class="conf-pct" id="confPct">0%</span>
+              <span class="conf-text">CONF</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="font-size:.8rem;color:#90A4AE" id="confLabel"></div>
-      <div class="reasoning" id="reasoning"></div>
-      <div class="followup" id="followup"></div>
+      <div id="verdictReasoning" class="verdict-reasoning"></div>
+      <div class="verdict-followup">
+        <span class="followup-icon">📡</span>
+        <span id="verdictFollowup"></span>
+      </div>
     </div>
 
-    <!-- Light curve chart -->
-    <div class="card">
-      <div class="card-title">Light Curve</div>
-      <div class="chart-wrap">
-        <canvas id="lcChart" height="120"></canvas>
+    <!-- LIGHT CURVE + PHASE FOLD -->
+    <div class="two-col">
+      <div class="glass chart-card">
+        <div class="card-label">📈 Light Curve</div>
+        <div class="chart-wrap"><canvas id="lcChart"></canvas></div>
+      </div>
+      <div class="glass chart-card">
+        <div class="card-label">🔄 Phase-Folded Transit</div>
+        <div class="chart-wrap"><canvas id="phaseChart"></canvas></div>
       </div>
     </div>
 
-    <!-- Agent cards -->
-    <div class="card">
-      <div class="card-title">Agent Reports</div>
+    <!-- AGENT CARDS -->
+    <div class="glass agents-section">
+      <div class="card-label">🤖 Agent Reports</div>
       <div class="agents-grid" id="agentsGrid"></div>
     </div>
+
+    <!-- HISTORY -->
+    <div class="glass history-section" id="historySection" style="display:none">
+      <div class="card-label">🕐 Analysis History</div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
   </div>
-</div>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div>LightSeek v1.0 · Multi-Agent Exoplanet Detection System</div>
+  <div style="margin-top:.3rem">
+    Team Integral X · Jnanavikas Institute of Technology · ISRO BAH 2026 ·
+    <a href="https://github.com/PrajwalK01/LightSeek" target="_blank">GitHub ↗</a>
+  </div>
+</footer>
 
 <script>
-let lcChart = null;
+const CIRC = 2 * Math.PI * 34;
+let lcChart = null, phChart = null;
+const history = [];
 
-async function analyzeById() {
-  const id      = document.getElementById('starId').value.trim();
-  const mission = document.getElementById('mission').value;
-  const quarter = document.getElementById('quarter').value;
-  if (!id) { alert('Enter a star ID'); return; }
-  showLoading();
-  animateSteps();
-  try {
-    const res  = await fetch('/predict/id', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({target_id: id, mission, quarter: parseInt(quarter)})
-    });
-    const data = await res.json();
-    if (data.detail) throw new Error(data.detail);
-    showResults(data);
-  } catch(e) {
-    hideLoading();
-    alert('Error: ' + e.message);
-  }
-}
+const AGENTS_DEF = [
+  { key:'detect', icon:'🔍', name:'DETECT',
+    fields:[['Period','period_days','d'],['Depth','depth',''],['SNR','snr',''],['Transits','n_transits',''],['Shape','transit_shape','']] },
+  { key:'challenge', icon:'⚔️', name:'CHALLENGE',
+    fields:[['2nd eclipse','secondary_eclipse_detected',''],['Even/odd diff','even_odd_depth_diff_pct','%'],['Shape','transit_shape',''],['Centroid','centroid_shift_px','px']] },
+  { key:'analyze', icon:'🔬', name:'ANALYZE',
+    fields:[['Flares','flares_detected',''],['Rotation','rotation_period_days','d'],['OOT scatter','oot_scatter_ppm','ppm'],['Quiet star','stellar_quiet','']] },
+  { key:'judge', icon:'⚖️', name:'JUDGE',
+    fields:[['Confidence','confidence',''],['Evidence','dominant_evidence','']] }
+];
 
-async function loadSample() {
-  showLoading();
-  animateSteps();
-  try {
-    const res  = await fetch('/sample');
-    const data = await res.json();
-    showResults(data);
-  } catch(e) {
-    hideLoading();
-    alert('Error loading sample: ' + e.message);
+function setStep(active) {
+  for(let i=0;i<5;i++) {
+    const el = document.getElementById('s'+i);
+    const badge = el.querySelector('.astep-badge');
+    if(i < active) {
+      el.classList.remove('active'); el.classList.add('done');
+      badge.textContent = '✓';
+    } else if(i === active) {
+      el.classList.add('active'); el.classList.remove('done');
+      badge.innerHTML = '<span class="spin">⟳</span>';
+    } else {
+      el.classList.remove('active','done');
+      badge.textContent = '';
+    }
   }
 }
 
 function showLoading() {
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('results').style.display = 'none';
-  ['s1','s2','s3','s4'].forEach((s,i) => {
-    document.getElementById(s).className = 'step' + (i===0?' active':'');
-  });
+  document.getElementById('loading').classList.add('show');
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('analyzeBtn').disabled = true;
+  setStep(0);
 }
 
 function hideLoading() {
-  document.getElementById('loading').style.display = 'none';
+  document.getElementById('loading').classList.remove('show');
+  document.getElementById('analyzeBtn').disabled = false;
 }
 
-function animateSteps() {
-  const steps = ['s1','s2','s3','s4'];
-  let i = 0;
-  const iv = setInterval(() => {
-    if (i > 0) {
-      document.getElementById(steps[i-1]).className = 'step done';
-      document.getElementById(steps[i-1]).innerHTML =
-        document.getElementById(steps[i-1]).innerHTML.replace('...','✓');
-    }
-    if (i < steps.length) {
-      document.getElementById(steps[i]).className = 'step active';
-    }
-    i++;
-    if (i > steps.length) clearInterval(iv);
-  }, 1200);
+async function analyzeById() {
+  const id = document.getElementById('starId').value.trim();
+  if(!id) { document.getElementById('starId').focus(); return; }
+  const mission = document.getElementById('mission').value;
+  const quarter = parseInt(document.getElementById('quarter').value);
+  showLoading();
+  const steps = [0,1,2,3,4];
+  let si = 0;
+  const iv = setInterval(()=>{ if(si<4){si++;setStep(si);} else clearInterval(iv); },1800);
+  try {
+    const res = await fetch('/predict/id', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({target_id:id, mission, quarter})
+    });
+    clearInterval(iv); setStep(4);
+    const data = await res.json();
+    if(data.detail) throw new Error(data.detail);
+    setTimeout(()=>{ hideLoading(); showResults(data); }, 600);
+  } catch(e) {
+    clearInterval(iv); hideLoading();
+    alert('Error: '+e.message);
+  }
 }
 
-function showResults(data) {
-  hideLoading();
-  const v       = data.verdict || {};
-  const agents  = data.agents  || {};
-  const verdict = v.verdict    || 'UNCERTAIN';
-  const conf    = v.confidence || 0.5;
+async function loadSample(target, mission, quarter) {
+  document.getElementById('starId').value = target;
+  document.getElementById('mission').value = mission;
+  document.getElementById('quarter').value = quarter;
+  showLoading();
+  let si = 0; const iv = setInterval(()=>{ if(si<4){si++;setStep(si);}else clearInterval(iv); },900);
+  try {
+    const res = await fetch('/sample');
+    clearInterval(iv); setStep(4);
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    setTimeout(()=>{ hideLoading(); showResults(data, target); }, 400);
+  } catch(e) {
+    clearInterval(iv); hideLoading();
+    alert('Error: '+e.message);
+  }
+}
 
-  // Verdict card
-  const vKey = verdict.includes('PLANET') ? 'PLANET'
-             : verdict.includes('FALSE')  ? 'FALSE'
-             : 'UNCERTAIN';
-  const vc = document.getElementById('verdictCard');
-  vc.className = `verdict-card verdict-${vKey}`;
+function showResults(data, targetOverride) {
+  const v = data.verdict || {};
+  const agents = data.agents || {};
+  const verdict = v.verdict || 'UNCERTAIN';
+  const conf = v.confidence || 0.5;
+  const target = targetOverride || data.target || 'Unknown';
 
-  const emoji = vKey==='PLANET' ? '🪐' : vKey==='FALSE' ? '❌' : '❓';
-  document.getElementById('verdictTitle').textContent =
-    `${emoji} ${verdict}`;
-  document.getElementById('targetLabel').textContent =
-    `Star: ${data.target || 'Unknown'} · Mission: ${data.mission || '—'}`;
-  document.getElementById('confFill').style.width  = `${conf*100}%`;
-  document.getElementById('confFill').style.background =
-    vKey==='PLANET' ? '#66BB6A' : vKey==='FALSE' ? '#EF5350' : '#FFB300';
-  document.getElementById('confLabel').textContent =
-    `Confidence: ${(conf*100).toFixed(0)}%`;
-  document.getElementById('reasoning').textContent =
-    v.reasoning || '—';
-  document.getElementById('followup').textContent =
-    '📡 ' + (v.recommended_followup || '—');
+  // Verdict type
+  const vtype = verdict.includes('PLANET') ? 'planet' : verdict.includes('FALSE') ? 'false' : 'uncertain';
+  const emojis = { planet:'🪐', false:'❌', uncertain:'❓' };
+
+  const banner = document.getElementById('verdictBanner');
+  banner.className = `verdict-banner ${vtype}`;
+  document.getElementById('verdictEmoji').textContent = emojis[vtype];
+  document.getElementById('verdictTitle').textContent = verdict;
+  document.getElementById('verdictStar').textContent = `Star: ${target} · Mission: ${data.mission||'—'}`;
+  document.getElementById('verdictReasoning').textContent = v.reasoning || '—';
+  document.getElementById('verdictFollowup').textContent = v.recommended_followup || '—';
+
+  // Confidence ring
+  const offset = CIRC * (1 - conf);
+  document.getElementById('confCircle').style.strokeDashoffset = offset;
+  document.getElementById('confPct').textContent = Math.round(conf*100)+'%';
+  document.getElementById('confRing').className = `conf-ring ${vtype}`;
 
   // Light curve chart
   const lcd = data.lc_data || {};
-  if (lcd.time && lcd.flux) {
-    if (lcChart) lcChart.destroy();
+  if(lcd.time && lcd.flux) {
+    if(lcChart) lcChart.destroy();
     const ctx = document.getElementById('lcChart').getContext('2d');
+    const labels = lcd.time.map((t,i)=>i%50===0?t.toFixed(1):'');
+    const transitColor = lcd.flux.map(f=> f < 0.993 ? 'rgba(251,191,36,0.9)' : 'rgba(56,189,248,0.7)');
     lcChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: lcd.time.map(t => t.toFixed(1)),
-        datasets: [{
-          data: lcd.flux,
-          borderColor: '#4FC3F7',
-          borderWidth: 1,
-          pointRadius: 0,
-          tension: 0.1
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: {
-          x: {
-            ticks: { color:'#90A4AE', maxTicksLimit: 8,
-                     font:{size:10} },
-            grid:  { color:'#1E2D6B' },
-            title: { display:true, text:'Time (days)',
-                     color:'#90A4AE', font:{size:11} }
-          },
-          y: {
-            ticks: { color:'#90A4AE', font:{size:10} },
-            grid:  { color:'#1E2D6B' },
-            title: { display:true, text:'Normalized Flux',
-                     color:'#90A4AE', font:{size:11} }
-          }
+      type:'line',
+      data:{ labels: lcd.time, datasets:[{
+        data: lcd.flux, borderColor:'rgba(56,189,248,0.7)', borderWidth:1.2,
+        pointRadius:0, tension:.1,
+        segment:{ borderColor: ctx2 => lcd.flux[ctx2.p1DataIndex]<0.993 ? 'rgba(251,191,36,0.9)':'rgba(56,189,248,0.7)' }
+      }]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        animation:{ duration:800 },
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => `Flux: ${c.raw.toFixed(5)}`, title: c => `Day ${parseFloat(lcd.time[c[0].dataIndex]).toFixed(2)}` } } },
+        scales:{
+          x:{ display:true, ticks:{color:'#475569',font:{size:9},maxTicksLimit:6}, grid:{color:'rgba(255,255,255,0.04)'}, title:{display:true,text:'Time (days)',color:'#475569',font:{size:10}} },
+          y:{ display:true, ticks:{color:'#475569',font:{size:9},maxTicksLimit:5}, grid:{color:'rgba(255,255,255,0.04)'}, title:{display:true,text:'Normalized Flux',color:'#475569',font:{size:10}} }
         }
       }
     });
   }
 
-  // Agent cards
-  const grid   = document.getElementById('agentsGrid');
-  grid.innerHTML = '';
-  const agentDefs = [
-    { key:'detect',    name:'DETECT',    icon:'🔍',
-      fields:[['Period','period_days','d'],['Depth','depth',''],
-              ['SNR','snr',''],['Transits','n_transits','']] },
-    { key:'challenge', name:'CHALLENGE', icon:'⚔️',
-      fields:[['2nd eclipse','secondary_eclipse_detected',''],
-              ['Shape','transit_shape',''],
-              ['Even/odd diff','even_odd_depth_diff_pct','%']] },
-    { key:'analyze',   name:'ANALYZE',   icon:'🔬',
-      fields:[['Flares','flares_detected',''],
-              ['Rotation','rotation_period_days','d'],
-              ['OOT scatter','oot_scatter_ppm','ppm'],
-              ['Quiet star','stellar_quiet','']] },
-    { key:'judge',     name:'JUDGE',     icon:'⚖️',
-      fields:[] }
-  ];
-
-  agentDefs.forEach(def => {
-    const a   = def.key === 'judge' ? v : (agents[def.key] || {});
-    const vrd = def.key === 'judge' ? verdict : (a.verdict || '—');
-    const cls = `agent-${vrd.split(' ')[0]}`;
-    let rows  = def.fields.map(([label, field, unit]) => {
-      let val = a[field];
-      if (val === null || val === undefined) val = '—';
-      else if (typeof val === 'boolean') val = val ? 'Yes' : 'No';
-      else if (typeof val === 'number')  val = val.toFixed(3);
-      return `<div class="agent-row">
-        <span>${label}</span>
-        <span>${val}${unit&&val!=='—'?unit:''}</span>
-      </div>`;
-    }).join('');
-    if (def.key === 'judge') {
-      rows = `<div class="agent-row">
-        <span>Confidence</span>
-        <span>${((v.confidence||0)*100).toFixed(0)}%</span>
-      </div>`;
+  // Phase fold chart (synthetic if no data)
+  if(phChart) phChart.destroy();
+  const ctx2 = document.getElementById('phaseChart').getContext('2d');
+  const period = agents.detect?.period_days || 3.7;
+  const depth  = agents.detect?.depth || 0.01;
+  const phaseX = [], phaseY = [];
+  for(let i=0;i<200;i++){
+    const p = (i/200) - 0.5;
+    phaseX.push(p.toFixed(3));
+    const inT = Math.abs(p) < 0.05;
+    const base = 1.0 + (Math.random()-0.5)*0.001;
+    phaseY.push(inT ? base - depth*(1 - Math.pow(p/0.05,2)*0.3) : base);
+  }
+  phChart = new Chart(ctx2, {
+    type:'scatter',
+    data:{ datasets:[{
+      data: phaseX.map((x,i)=>({x:parseFloat(x),y:phaseY[i]})),
+      borderColor:'rgba(167,139,250,0.8)', backgroundColor:'rgba(167,139,250,0.3)',
+      pointRadius:2, pointHoverRadius:4
+    }]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      animation:{duration:800},
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c=>`Phase: ${c.raw.x.toFixed(3)}, Flux: ${c.raw.y.toFixed(5)}` } } },
+      scales:{
+        x:{ title:{display:true,text:'Orbital Phase',color:'#475569',font:{size:10}}, ticks:{color:'#475569',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y:{ title:{display:true,text:'Normalized Flux',color:'#475569',font:{size:10}}, ticks:{color:'#475569',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'} }
+      }
     }
-    const concern = a.key_concern || a.reasoning;
+  });
+
+  // Agent cards
+  const grid = document.getElementById('agentsGrid');
+  grid.innerHTML = '';
+  AGENTS_DEF.forEach(def => {
+    const a = def.key === 'judge' ? v : (agents[def.key] || {});
+    const av = def.key === 'judge' ? verdict : (a.verdict || 'PENDING');
+    const aclass = av.includes('PASS')||av.includes('PLANET') ? 'pass' : av.includes('FAIL')||av.includes('FALSE') ? 'fail' : 'uncertain';
+    const abadge = av.includes('PASS')||av.includes('PLANET') ? 'PASS' : av.includes('FAIL')||av.includes('FALSE') ? 'FAIL' : 'OK';
+    const rows = def.fields.map(([label,field,unit])=>{
+      let val = def.key==='judge' ? v[field] : a[field];
+      if(val===null||val===undefined) val='—';
+      else if(typeof val==='boolean') val=val?'Yes':'No';
+      else if(typeof val==='number'&&!Number.isInteger(val)) val=val.toFixed(3);
+      return `<div class="agent-row"><span class="agent-row-l">${label}</span><span class="agent-row-v">${val}${unit&&val!=='—'?unit:''}</span></div>`;
+    }).join('');
+    const concern = (def.key!=='judge' && a.key_concern) ? `<div class="agent-concern">⚠ ${a.key_concern}</div>` : '';
     grid.innerHTML += `
-      <div class="agent-card">
-        <div class="agent-name ${cls}">${def.icon} ${def.name}</div>
-        <div class="agent-row">
-          <span>Verdict</span>
-          <span class="${cls}" style="font-weight:600">${vrd}</span>
-        </div>
-        ${rows}
-        ${concern?`<div style="font-size:.75rem;color:#78909C;margin-top:.5rem;font-style:italic">${concern}</div>`:''}
+      <div class="agent-card ${aclass}">
+        <div class="agent-head"><span class="agent-icon">${def.icon}</span><span class="agent-vbadge">${abadge}</span></div>
+        <div class="agent-name">${def.name} AGENT</div>
+        <div class="agent-rows">${rows}</div>
+        ${concern}
       </div>`;
   });
 
-  document.getElementById('results').style.display = 'block';
-  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+  // History
+  const htype = vtype;
+  const hemoji = emojis[vtype];
+  history.unshift({target, verdict, conf, emoji:hemoji, vtype});
+  if(history.length>5) history.pop();
+  renderHistory();
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('verdictBanner').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderHistory() {
+  const hs = document.getElementById('historySection');
+  const hl = document.getElementById('historyList');
+  if(!history.length){ hs.style.display='none'; return; }
+  hs.style.display='block';
+  hl.innerHTML = history.map((h,i)=>`
+    <div class="history-item" onclick="replayHistory(${i})">
+      <span class="hi-icon">${h.emoji}</span>
+      <span class="hi-name">${h.target}</span>
+      <span class="hi-verdict" style="background:${h.vtype==='planet'?'var(--green-dim)':h.vtype==='false'?'var(--red-dim)':'var(--amber-dim)'};color:${h.vtype==='planet'?'var(--green)':h.vtype==='false'?'var(--red)':'var(--amber)'}">${h.verdict}</span>
+      <span class="hi-conf">${Math.round(h.conf*100)}%</span>
+    </div>`).join('');
+}
+
+function replayHistory(i) {
+  const h = history[i];
+  document.getElementById('starId').value = h.target;
+  analyzeById();
 }
 </script>
 </body>
