@@ -221,7 +221,7 @@ Each flagged candidate passes through four specialist agents. JUDGE reads all th
 
 | Name | Role |
 |---|---|
-| **Prajwal K** *(Leader)* | Architecture, CNN-Transformer, Agent pipeline, Deployment |
+| **Prajwal K**  | Architecture, CNN-Transformer, Agent pipeline, Deployment |
 | **Nagesh R** | Data preprocessing, Noise filtering, Wavelet denoising |
 | **Thanushree B S** | Data collection, Training pipeline, Experiments |
 | **Sinchana R** | TESS data, Evaluation metrics, Dataset management |
